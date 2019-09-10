@@ -41,5 +41,6 @@ https://indy.fulgan.com/SSL/openssl-1.0.2q-i386-win32.zip
 Os arquivos libeay32.dll e ssleay32.dll devem ser colocados na pasta do
 executável, lembrando que por padrão o Delphi XE e superiores cria o arquivo
 Na pasta debug dentro da subpasta WIN32 ou WIN64 na pasta do projeto.
-Caso deseje utilizar o gmail para envio dos e-mails importante ver observações
+
+* Caso deseje utilizar o gmail para envio dos e-mails importante ver observações
 dentra da função enviaEmail
