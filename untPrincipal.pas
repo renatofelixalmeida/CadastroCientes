@@ -119,24 +119,22 @@ end;
 
 procedure TfrmPrincipal.btnGravarCadastroClick(Sender: TObject);
 var i : integer;
-    msg : string;
-    html : string;
+    Mensagem : string;
+    Html : string;
 begin
   // inicializando
-  msg := '';
+  Mensagem := '';
   i := 0;
 
-  // vou fazer uma validação basica levando em consideração que todos
-  // os campos são obrigatórios visto que não foi informado nos
-  // requisitos mas será possível definir se cada campo é obrigatório
-  // atribuindo a tag "1" ao compomente.
+  // vou fazer uma validação basica levando em consideração que
+  // os campos são obrigatórios tem atribuindo a tag "1" ao compomente.
   // O processo será simples, o sistema ira varrer todos os compomentes
   // da classe tDbEdit e verificará se o campo está nulo, ao encontrar
   // ele irá adicionar como mensagem de erro na string MSG o título do campo
   // informado no HINT do compomente, além de setar o foco para o primeiro
   // campo que deverá ser preenchido
   // ao final do processo se a variável MSG não estiver vazia ele exibirá
-  // para o cliente e não realizará o cadastro.
+  // para o cliente a mensagem e não realizará o cadastro.
 
   for i := 0 to ComponentCount - 1 do
   begin
@@ -145,17 +143,17 @@ begin
     begin
       if tdbEdit(components[i]).Field.IsNull then
       begin
-        if msg = '' then
+        if Mensagem = '' then
           tdbEdit(components[i]).SetFocus;
-          msg := msg + #13 + tdbEdit(components[i]).Hint;
+          Mensagem := Mensagem + #13 + tdbEdit(components[i]).Hint;
       end;
     end;
   end;
 
   // exibir a mensagem se existir ou cancelar efetivar o cadastro
-  if msg <> '' then
+  if Mensagem <> '' then
   begin
-    showMessage('Existem algumas pendências no cadastro:' + msg);
+    showMessage('Existem algumas pendências no cadastro:' + Mensagem);
   end
   else
   begin
@@ -165,8 +163,11 @@ begin
     // dentro de uma subchave endereço
     criarDocumentoXML(cdsCliente, arquivoXML);
     // criar um documento html que irá no corpo do e-mail
-    html := criarDocumentoHTML(cdsClienteNOME.AsString, cdsClienteEMAIL.AsString);
-    enviarEmail(html, arquivoXML, self);
+    Html := criarDocumentoHTML(cdsClienteNOME.AsString, cdsClienteEMAIL.AsString);
+    if enviarEmail(cdsClienteEMAIL.AsString, Html, arquivoXML, self) then
+      showMessage('O envio do e-mail foi efetuado com sucesso!')
+    else
+      showMessage('Ocorreu um erro ao enviar o e-mail.');
   end;
 end;
 

@@ -42,14 +42,14 @@ object frmConfiguracao: TfrmConfiguracao
         Height = 155
         Caption = 'Configura'#231#245'es de envio de e-mail'
         TabOrder = 0
-        object Label2: TLabel
+        object lblUsuario: TLabel
           Left = 24
           Top = 47
           Width = 40
           Height = 13
           Caption = 'Usu'#225'rio:'
         end
-        object Label1: TLabel
+        object lblServidor: TLabel
           Left = 24
           Top = 21
           Width = 44
@@ -75,20 +75,23 @@ object frmConfiguracao: TfrmConfiguracao
           Top = 44
           Width = 203
           Height = 21
-          TabOrder = 0
+          Hint = 'teste@casanova.imb.br'
+          TabOrder = 1
         end
         object edtServidorSmtp: TEdit
           Left = 86
           Top = 18
           Width = 330
           Height = 21
-          TabOrder = 1
+          Hint = 'mail.casanova.imb.br'
+          TabOrder = 0
         end
         object edtSenha: TEdit
           Left = 86
           Top = 71
           Width = 203
           Height = 21
+          Hint = 'testando1'
           PasswordChar = '#'
           TabOrder = 2
         end
@@ -97,6 +100,7 @@ object frmConfiguracao: TfrmConfiguracao
           Top = 97
           Width = 59
           Height = 21
+          Hint = '26'
           TabOrder = 3
         end
         object chkSSL: TCheckBox
