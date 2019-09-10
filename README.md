@@ -2,7 +2,6 @@
 Projeto de teste para processo seletivo. Simples cadastro de clientes sem banco de dados com busca automática de CEP e envio por e-mail via XML
 
 Sistema desenvolvido por Renato Félix de Almeida em 09/09/2019
- Objetivo: Teste para processo seletivo da infosistemas (infosistemas.com.br)
 
 # Requisitos:
 
