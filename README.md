@@ -5,18 +5,18 @@ Sistema desenvolvido por Renato Félix de Almeida em 09/09/2019
 
 # Requisitos:
 
-1) Utilizar a linguagem Delphi;
-2) Criar uma tela de cadastro de clientes, com os seguintes campos:
+* Utilizar a linguagem Delphi;
+* Criar uma tela de cadastro de clientes, com os seguintes campos:
   Nome, Identidade, CPF, Telefone, Email, Endereço, Cep, Logradouro, Numero,
   Complemento, Bairro, Cidade, Estado, Pais
-3) Ao informar um Cep o sistema deve realizar a busca dos dados relacionados ao
+* Ao informar um Cep o sistema deve realizar a busca dos dados relacionados ao
   mesmo no seguinte endereço: https://viacep.com.br/;
-4) A forma de consumo da API do via Cep, deverá ser utiliza JSON;
-5) Ao termino do cadastro o usuário deverá enviar um email, contendo as
+* A forma de consumo da API do via Cep, deverá ser utiliza JSON;
+* Ao termino do cadastro o usuário deverá enviar um email, contendo as
   informações cadastrais, onde deverá ser enviado um arquivo no formato XML;
-6) Os registros devem ficar salvo em memória, não será necessário criar um
+* Os registros devem ficar salvo em memória, não será necessário criar um
   banco de dados para o armazenamento dos dados;
-7) Disponibilizar projeto no github;
+* Disponibilizar projeto no github;
 
 # Observações:
 * Conforme requisitos o sistema não irá cadastrar os dados do cliente em uma
@@ -34,13 +34,26 @@ http://altd.embarcadero.com/download/radstudio/10.3/radstudio_10_3_2_esd_96593b.
 
 * São necessário arquivos de suporte openSSL para utilizar camada SSL. Estes
 arquivos podem ser obtidos em:
+
 https://indy.fulgan.com/SSL/
+
 O pacote deve ser baixado para a versão específica da Indy e também do delphi.
 Para a versão Delphi 10.3 community os arquivos podem ser baixados em:
+
 https://indy.fulgan.com/SSL/openssl-1.0.2q-i386-win32.zip
+
 Os arquivos libeay32.dll e ssleay32.dll devem ser colocados na pasta do
 executável, lembrando que por padrão o Delphi XE e superiores cria o arquivo
 Na pasta debug dentro da subpasta WIN32 ou WIN64 na pasta do projeto.
 
-* Caso deseje utilizar o gmail para envio dos e-mails importante ver observações
-dentra da função enviaEmail
+* Ao iniciar o aplicativo pela primeira vez você será solicitado a informar
+os dados do servidor de e-mail, além de nome de usuário, senha, porta e
+SSL. Existe uma configuração padrão que já está funcionando, pasta clicar
+em Gravar para confirmar.
+
+* Se você tentar utilizar o servidor SMTP do Gmail é importante saber que:
+O Gmail por padrão vem configurado para bloquear acesso ao servidor por 
+aplicativos de terceiros. Quando você tentar enviar um e-mail, mesmo com
+os dados corretos, será informado um erro de autenticação e o gmail 
+apresentará uma mensagem informando a tentativa de acesso e lhe apresentará
+também uma opção para liberar o acesso a aplicativos de terceiros.
