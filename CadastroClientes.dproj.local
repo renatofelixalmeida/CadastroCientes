@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+  <Transactions>
+    <Transaction>2019/09/10 09:11:38.541,=C:\Users\Programacao\delphi\Unit1.pas</Transaction>
+    <Transaction>2019/09/10 09:14:01.478,C:\Users\Programacao\delphi\CadastroClientes\untPrincipal.pas=C:\Users\Programacao\delphi\Unit1.pas</Transaction>
+    <Transaction>2019/09/10 09:14:01.478,C:\Users\Programacao\delphi\CadastroClientes\untPrincipal.dfm=C:\Users\Programacao\delphi\Unit1.dfm</Transaction>
+    <Transaction>2019/09/10 09:14:12.243,C:\Users\Programacao\delphi\CadastroClientes\CadastroClientes.dproj=C:\Users\Programacao\delphi\Project1.dproj</Transaction>
+    <Transaction>2019/09/10 09:17:37.720,=C:\Users\Programacao\delphi\CadastroClientes\Unit1.pas</Transaction>
+    <Transaction>2019/09/10 09:17:43.287,C:\Users\Programacao\delphi\CadastroClientes\untConfiguracao.dfm=C:\Users\Programacao\delphi\CadastroClientes\Unit1.dfm</Transaction>
+    <Transaction>2019/09/10 09:17:43.287,C:\Users\Programacao\delphi\CadastroClientes\untConfiguracao.pas=C:\Users\Programacao\delphi\CadastroClientes\Unit1.pas</Transaction>
+    <Transaction>2019/09/10 09:29:34.266,=C:\Users\Programacao\delphi\CadastroClientes\Unit1.pas</Transaction>
+    <Transaction>2019/09/10 09:29:48.270,C:\Users\Programacao\delphi\CadastroClientes\untGlobal.pas=C:\Users\Programacao\delphi\CadastroClientes\Unit1.pas</Transaction>
+    <Transaction>2019/09/10 09:40:46.669,C:\Users\Programacao\delphi\CadastroClientes\untGlobal.pas=</Transaction>
+    <Transaction>2019/09/10 09:55:50.344,=C:\Users\Programacao\delphi\CadastroClientes\Unit1.pas</Transaction>
+    <Transaction>2019/09/10 09:55:55.086,C:\Users\Programacao\delphi\CadastroClientes\untFuncoes.pas=C:\Users\Programacao\delphi\CadastroClientes\Unit1.pas</Transaction>
+  </Transactions>
+</BorlandProject>
