@@ -7,6 +7,7 @@ unit untFuncoes;
   * Buscar informações relacionadas a um CEP e retornar um objeto JSON
   * Criar um documento HTML para ser adicionado ao corpo do e-mail
   * Enviar um e-mail com as informações de cadastro
+  * Foi ok
 }
 interface
 uses
