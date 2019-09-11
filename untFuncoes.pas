@@ -7,7 +7,7 @@ unit untFuncoes;
   * Buscar informações relacionadas a um CEP e retornar um objeto JSON
   * Criar um documento HTML para ser adicionado ao corpo do e-mail
   * Enviar um e-mail com as informações de cadastro
-  * Foi ok
+  * Validar E-mail
 }
 interface
 uses
@@ -20,6 +20,7 @@ uses
   function BuscarCEP(ACep:string): TJSONObject; // recebe um objeto JSON do CEP
   function CriarDocumentoHTML(ANomeCliente, AEmailCliente: string): string; // cria o documento html
   function EnviarEmail(AEmail, AHtml, AAnexo : string; self :tComponent) : boolean; // Envia o email
+  function ValidarEmail(AEmail : string) : boolean; // valida um endereço de e-mail
 implementation
 
 uses untPrincipal;
@@ -231,5 +232,74 @@ begin
     FreeAndNil(IniFile);
   end;
 end;
+function ValidarEmail(AEmail : string) : boolean; // valida um endereço de e-mail
+var partes : tStringList;
+    nome, servidor : string;
+    i : integer;
+    temLetras : boolean;
+begin
+  // inicializar
+  result := false;
+  nome := '';
+  servidor := '';
+  i := 0;
+  temLetras := false;
 
+  // tamanho minimo de e-mail aaa@bb.cc (9)
+  if length(AEmail) < 9 then exit;
+
+  // criar uma stringList para dividir o email em partes e fazer outras
+  // operações
+  partes := tStringList.Create;
+  try
+    // dividir o email separando usuário (antes da @) e servidor (depois da @)
+    partes.Text := stringReplace(AEmail, '@', sLineBreak, [rfReplaceAll]);
+
+    // verificar se tem nome e servidor
+    if partes.Count <> 2 then exit;
+
+    // pegar nome de usuário e servidor
+    nome := partes.Strings[0];
+    servidor := partes.Strings[1];
+
+    // nome tem que ter pelo menos 3 caracteres
+    if length(nome) < 3 then exit;
+
+    // nome nao pode começar nem terminar com .
+    if (nome[1]='.') or (nome[length(nome)]='.')  then exit;
+
+    // nome de usuário pode conter letras, numeros, ponto e sublinhado
+    for i := 1 to length(nome) do
+      if not (nome[i] in ['0'..'9', 'a'..'z', '.', '_', '-']) then exit;
+
+    // regras para o domínio obtido no registro.br
+    //Tamanho mínimo de 2 e máximo de 26 caracteres, não incluindo a categoria. Por exemplo: no domínio xxxx.com.br, esta limitação se refere ao xxxx;
+    if (length(servidor)<2) or (length(servidor) > 26) then exit;
+
+    //Não iniciar ou terminar por hífen.
+    if (servidor[1]='-') or (servidor[length(servidor)]='-') then exit;
+
+    //Caracteres válidos são letras de "a" a "z", números de "0" a "9", o hífen,
+    //e os seguintes caracteres acentuados: à, á, â, ã, é, ê, í, ó, ô, õ, ú, ü, ç
+    //Não conter somente números;
+    for i := 1 to length(servidor) do
+    begin
+      // verificar se apenas os caracteres válidos estão no nome do servidor
+      if not (servidor[i] in ['0'..'9', 'a'..'z', '.', '_', '-', 'à', 'á',
+                              'â', 'ã', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú',
+                              'ü', 'ç']) then exit;
+      // verificar se possue alguma letra
+      if servidor[i] in ['a'..'z'] then temLetras := true;
+
+    end;
+    // ver se tinha alguma letra no nome
+    if not temLetras then exit;
+
+    // se passou por todas as validações quer dizer que o endereço de e-mail está
+    result := true;
+  finally
+    // liberar memória
+    freeAndNil(partes);
+  end;
+end;
 end.

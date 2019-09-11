@@ -2145,8 +2145,6 @@ object frmPrincipal: TfrmPrincipal
     Align = alClient
     BevelOuter = bvLowered
     TabOrder = 0
-    ExplicitWidth = 626
-    ExplicitHeight = 485
     object pnlCabecalho: TPanel
       Left = 1
       Top = 1
@@ -2154,7 +2152,6 @@ object frmPrincipal: TfrmPrincipal
       Height = 50
       Align = alTop
       TabOrder = 0
-      ExplicitWidth = 624
       object lblDescricao: TLabel
         Left = 16
         Top = 17
@@ -2178,7 +2175,6 @@ object frmPrincipal: TfrmPrincipal
       Height = 141
       Align = alTop
       TabOrder = 1
-      ExplicitWidth = 624
       object gpbDadosCadastrais: TGroupBox
         Left = 6
         Top = 6
@@ -2349,6 +2345,7 @@ object frmPrincipal: TfrmPrincipal
           Font.Style = []
           ParentFont = False
           TabOrder = 4
+          OnExit = dbeEmailExit
         end
       end
     end
@@ -2359,7 +2356,6 @@ object frmPrincipal: TfrmPrincipal
       Height = 240
       Align = alTop
       TabOrder = 2
-      ExplicitWidth = 624
       object gpbEndereco: TGroupBox
         Left = 6
         Top = 5
@@ -2663,8 +2659,6 @@ object frmPrincipal: TfrmPrincipal
       Height = 51
       Align = alClient
       TabOrder = 3
-      ExplicitWidth = 624
-      ExplicitHeight = 52
       object btnNovoCadastro: TButton
         Left = 172
         Top = 10

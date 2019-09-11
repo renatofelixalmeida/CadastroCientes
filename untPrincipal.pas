@@ -81,6 +81,7 @@ type
     procedure btnNovoCadastroClick(Sender: TObject);
     procedure cdsClienteNewRecord(DataSet: TDataSet);
     procedure FormShow(Sender: TObject);
+    procedure dbeEmailExit(Sender: TObject);
   private
     { Private declarations }
   public
@@ -238,6 +239,21 @@ begin
     showMessage('Número de CPF inválido!');
     // o usuário é obrigado a informar um CPF certo
     dbeCpf.SetFocus;
+  end;
+
+end;
+
+procedure TfrmPrincipal.dbeEmailExit(Sender: TObject);
+begin
+  // verificar se o usuário está cancelando ou saindo, neste caso ignorar o
+  // e-mail
+  if (sender = btnCancelarCadastro) or (sender = btnFechar) then exit;
+
+  // validar o e-mail
+  if not validarEmail(cdsClienteEMAIL.AsString) then
+  begin
+    showMessage('Endereço de e-mail inválido. Verifique...');
+    dbeEmail.SetFocus;
   end;
 
 end;
