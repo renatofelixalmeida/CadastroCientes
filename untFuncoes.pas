@@ -296,6 +296,7 @@ begin
     if not temLetras then exit;
 
     // se passou por todas as validações quer dizer que o endereço de e-mail está
+    result := true;
   finally
     // liberar memória
     freeAndNil(partes);
