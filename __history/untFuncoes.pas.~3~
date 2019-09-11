@@ -1,0 +1,281 @@
+unit untFuncoes;
+
+{
+ Funções de suporte que serão responsáveis por
+  * Validar CPF
+  * Criar o documento XML baseado no dataset
+  * Buscar informações relacionadas a um CEP e retornar um objeto JSON
+  * Criar um documento HTML para ser adicionado ao corpo do e-mail
+  * Enviar um e-mail com as informações de cadastro
+  * Validar E-mail
+}
+interface
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
+  Vcl.Dialogs, Data.DB, DBXJSONReflect,  idHTTP, IdSSLOpenSSL, JSON, XMLIntf, XMLDoc,
+  IdSMTP, IdMessage, IdText, IdAttachmentFile, IdExplicitTLSClientServerBase, inifiles;
+
+  function ValidarCpf(ACpf : string) : boolean; // valida um número de cpf
+  procedure CriarDocumentoXML(ADataSet : tDataSet; AArquivo : String); // Cria documento XML
+  function BuscarCEP(ACep:string): TJSONObject; // recebe um objeto JSON do CEP
+  function CriarDocumentoHTML(ANomeCliente, AEmailCliente: string): string; // cria o documento html
+  function EnviarEmail(AEmail, AHtml, AAnexo : string; self :tComponent) : boolean; // Envia o email
+  function ValidarEmail(AEmail : string) : boolean; // valida um endereço de e-mail
+implementation
+
+uses untPrincipal;
+
+function ValidarCpf(ACpf : string) : boolean; // valida um número de cpf
+var i, Total, Digito, PosicaoDV : integer;
+begin
+  // função interessante e muito simples para validação de CPF utilizando
+  // dois loops aninhados para calcular os dois DVs do cpf
+  // inicializacao
+  result := false;
+  i := 0;
+
+  // primeira validação verificar se o número tem 11 caracteres
+  if length(ACpf) <> 11 then exit;
+
+  // o cpf contem dois digitos verificadores posicionados no final e são
+  // validados pelo modulo 11
+  // serão utilizados dois loops alinhados sendo um para indicar qual
+  // o digito sendo verificado e o outro para aplicar o módulo 11
+  // a soma é obtida a partir de um multiplicador aplicado a cada
+  // caracter do cep começando em 10 na primeira iteração e em 11 na segunda
+  // sempre da esquerda para a direita. O resultado do DV para cada iteração
+  // é obtido subtraindo o módulo da soma de 11. Caso o resultado seja 10
+  // o DV irá valer zero (basta aplicar o módulo 10 no resultado)
+  // não existe a checagem de números repetidos
+  PosicaoDV := 0;
+  while (PosicaoDV<2) do
+  begin
+      Total := 0;
+      i := 1;
+      while (i<10+PosicaoDV) do
+      begin
+          Total := Total + (11 + PosicaoDV - i) * strToInt(ACpf[i]);;
+          inc(i);
+      end;
+      Total := (11 - Total mod 11) mod 10;
+      if strToInt(ACpf[i]) <> Total then exit; // cpf incorreto
+      inc(PosicaoDV);
+  end;
+  result := true;
+end;
+
+procedure CriarDocumentoXML(ADataSet : tDataSet; AArquivo : String); // Cria documento XML
+var XMLDocument: TXMLDocument;
+    NodeTabela, NodeRegistro, NodeEndereco: IXMLNode;
+begin
+
+  // criar o documento xml que será anexado ao e-mail, conterá a seguinte estrutura
+  // Raiz
+  //  Nome, Identidade, CPF, Telefone, E-mail
+  //  Endereço
+  //    Cep, Logradouro, Número, Complemento, Bairro, Cidade, Estado, País
+  // o documento será salvo no caminho informado em arquivo e os dados virão do
+  // dataset
+  XMLDocument := TXMLDocument.Create(nil);
+  try
+    XMLDocument.Active := True;
+    NodeTabela := XMLDocument.AddChild('Cadastro');
+
+    NodeRegistro := NodeTabela.AddChild('Cliente');
+
+    NodeRegistro.ChildValues['Nome'] := ADataSet.FieldByName('NOME').AsString;
+    NodeRegistro.ChildValues['Identidade'] := ADataSet.FieldByName('IDENTIDADE').AsString;
+    NodeRegistro.ChildValues['CPF'] := ADataSet.FieldByName('CPF').AsString;
+    NodeRegistro.ChildValues['Telefone'] := ADataSet.FieldByName('TELEFONE').AsString;
+    NodeRegistro.ChildValues['Email'] := ADataSet.FieldByName('EMAIL').AsString;
+
+    NodeEndereco := NodeRegistro.AddChild('Endereco');
+    NodeEndereco.ChildValues['Cep'] := ADataSet.FieldByName('CEP').AsString;
+    NodeEndereco.ChildValues['Logradouro'] := ADataSet.FieldByName('LOGRADOURO').AsString;
+    NodeEndereco.ChildValues['Numero'] := ADataSet.FieldByName('NUMERO').AsString;
+    NodeEndereco.ChildValues['Complemento'] := ADataSet.FieldByName('COMPLEMENTO').AsString;
+    NodeEndereco.ChildValues['Bairro'] := ADataSet.FieldByName('BAIRRO').AsString;
+    NodeEndereco.ChildValues['Cidade'] := ADataSet.FieldByName('CIDADE').AsString;
+    NodeEndereco.ChildValues['Estado'] := ADataSet.FieldByName('ESTADO').AsString;
+    NodeEndereco.ChildValues['Pais'] := ADataSet.FieldByName('PAIS').AsString;
+    XMLDocument.SaveToFile(AArquivo);
+  finally
+    freeAndNil(XMLDocument);
+  end;
+
+end;
+
+function BuscarCEP(ACep:string): TJSONObject; // recebe um objeto JSON do CEP
+var
+   IdHTTP: TIdHTTP;
+   IDSSLHandler : TIdSSLIOHandlerSocketOpenSSL;
+   Response: TStringStream;
+begin
+  try
+    IdHTTP := TIdHTTP.Create;
+    IDSSLHandler := TIdSSLIOHandlerSocketOpenSSL.Create;
+    IdHTTP.IOHandler := IDSSLHandler;
+    Response := TStringStream.Create('');
+    IdHTTP.Get('https://viacep.com.br/ws/' + ACep + '/json', Response);
+    if (IdHTTP.ResponseCode = 200) and not(Utf8ToAnsi(Response.DataString) = '{'#$A'  "erro": true'#$A'}') then
+       Result := TJSONObject.ParseJSONValue(TEncoding.ASCII.GetBytes( Utf8ToAnsi(Response.DataString)), 0) as TJSONObject;
+  finally
+    FreeAndNil(IdHTTP);
+    FreeAndNil(IDSSLHandler);
+    Response.Destroy;
+  end;
+end;
+
+function CriarDocumentoHTML(ANomeCliente, AEmailCliente: string): string; // cria o documento html
+begin
+  result := '<HTML lang=pt_br>' + // simples documento HTML explicando o
+            '<HEAD>' +            // cadastro
+            '<META CHARSET="UTF-8">' +
+            '</HEAD>' +
+            '<BODY>' +
+            '<H1>Cliente cadastrado</H1>' +
+            '<P>O cliente <a href="mailto:' + AEmailCliente + '">' + ANomeCliente + '</a> foi cadastrado em nosso sistema com sucesso</P>' +
+            '<P>Anexo voc&eacute; encontrar&aacute; um documento XML com todas as informa&ccedil;&otilde;es do cadastro</P>' +
+            '</BODY>' +
+            '</HTML>';
+end;
+
+function EnviarEmail(AEmail, AHtml, AAnexo : string; self :tComponent) : boolean; // Envia o email
+var
+  // Envia um e-mail com os parâmetros passados
+  // As configurações da conta de e-mail são registradas nas constantes
+  // A senha de acesso a conta também está na costante apenas para teste
+  // não deve ser usado em modo de proteção
+  // para utilizar o GMAIL para enviar e-mails é necessário alterar as
+  // configurações de segurança permitindo aplicativos de terceiros não
+  // seguros. Caso contrário não será possível enviar o e-mail.
+  // Para saber se as suas configurações estão corretas no caso do Gmail
+  // basta tentar enviar um e-mail. Se o gmail bloquear o envio informando
+  // erro de autenticação, basta ir na caixa de entrar, abrir o e-mail de
+  // aviso do gmail e dar a permissão
+  IdSSLIOHandlerSocket: TIdSSLIOHandlerSocketOpenSSL;
+  IdSMTP: TIdSMTP;
+  IdMessage: TIdMessage;
+  IdText: TIdText;
+  IniFile : tIniFile;
+begin
+  // inicialização
+  result := true;
+  IdSSLIOHandlerSocket := TIdSSLIOHandlerSocketOpenSSL.Create(Self);
+  IdSMTP := TIdSMTP.Create(Self);
+  IdMessage := TIdMessage.Create(Self);
+  IniFile := tIniFile.Create(arquivoConfiguracao);
+  try
+    // Configuração do protocolo SSL (TIdSSLIOHandlerSocketOpenSSL)
+    IdSSLIOHandlerSocket.SSLOptions.Method := sslvSSLv23;
+    IdSSLIOHandlerSocket.SSLOptions.Mode := sslmClient;
+
+    // Configuração do servidor SMTP (TIdSMTP)
+    IdSMTP.IOHandler := IdSSLIOHandlerSocket;
+    if IniFile.ReadBool('CONFIGURACAO', 'chkSSL', false) then
+      IdSMTP.UseTLS := utUseImplicitTLS;
+
+    IdSMTP.AuthType := satDefault;
+    IdSMTP.Port := strToInt(IniFile.ReadString('CONFIGURACAO', 'edtPorta', ''));
+    IdSMTP.Host := IniFile.ReadString('CONFIGURACAO', 'edtServidorSmtp', '');
+    IdSMTP.Username := IniFile.ReadString('CONFIGURACAO', 'edtUsuario', '');
+    IdSMTP.Password := IniFile.ReadString('CONFIGURACAO', 'edtSenha', '');
+
+    // Configuração da mensagem (TIdMessage)
+    IdMessage.From.Address := IniFile.ReadString('CONFIGURACAO', 'edtUsuario', '');
+    IdMessage.From.Name := 'Cadastro de Cliente';
+    IdMessage.ReplyTo.EMailAddresses := IdMessage.From.Address;
+    IdMessage.Recipients.Add.Text := AEmail;
+    IdMessage.Subject := 'Cadastro de cliente';
+    IdMessage.Encoding := meMIME;
+
+    // Configuração do corpo do email (TIdText)
+    IdText := TIdText.Create(IdMessage.MessageParts);
+    IdText.Body.Add(AHtml);
+    IdText.ContentType := 'text/html;; charset=iso-8859-1';
+
+    // Adiciona o anexo da mensagem se existir (TIdAttachmentFile)
+    if FileExists(AAnexo) then
+      TIdAttachmentFile.Create(IdMessage.MessageParts, AAnexo);
+
+    // Conexão e autenticação
+    try
+      IdSMTP.Connect;
+      IdSMTP.Authenticate;
+    except
+      on E:Exception do
+      begin
+        result := false;
+        Exit;
+      end;
+    end;
+
+    // Envio da mensagem
+    try
+      IdSMTP.Send(IdMessage);
+      result := true;
+    except
+      On E:Exception do
+      begin
+        result := false;
+      end;
+    end;
+  finally
+    // desconecta do servidor
+    IdSMTP.Disconnect;
+    // liberação da DLL
+    UnLoadOpenSSLLibrary;
+    // liberação dos objetos da memória
+    FreeAndNil(IdMessage);
+    FreeAndNil(IdSSLIOHandlerSocket);
+    FreeAndNil(IdSMTP);
+    FreeAndNil(IniFile);
+  end;
+end;
+function ValidarEmail(AEmail : string) : boolean; // valida um endereço de e-mail
+var partes : tStringList;
+    nome, servidor : string;
+    i : integer;
+
+begin
+  // inicializar
+  result := false;
+  nome := '';
+  servidor := '';
+  i := 0;
+
+  // tamanho minimo de e-mail aaa@bb.cc (9)
+  if length(AEmail) < 9 then exit;
+
+  // criar uma stringList para dividir o email em partes e fazer outras
+  // operações
+  partes := tStringList.Create;
+  try
+    // dividir o email separando usuário (antes da @) e servidor (depois da @)
+    partes.Text := stringReplace(AEmail, '@', sLineBreak, [rfReplaceAll]);
+
+    // verificar se tem nome e servidor
+    if partes.Strings.Length <> 2 then exit;
+
+    // pegar nome de usuário e servidor
+    nome := partes.Strings[0];
+    servidor := partes.Strings[1];
+
+    // nome tem que ter pelo menos 3 caracteres
+    if length(nome) < 3 then exit;
+
+    // nome nao pode começar nem terminar com .
+    if (nome[1]='.') or (nome[length(nome)]='.')  then exit;
+
+    // nome de usuário pode conter letras, numeros, ponto e sublinhado
+    for i := 1 to length(nome) do
+      if not (nome[i] in ['0'..'9', 'a'..'z', '.', '_']) then exit;
+
+
+
+  finally
+    // liberar memória
+    freeAndNil(partes);
+  end;
+end;
+end.
